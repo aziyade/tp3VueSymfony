@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Courses</title>
+	<link rel="stylesheet"
+	 href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	<style>
+		.barre {text-decoration: line-through;}
+	</style>
+</head>
+<body>
+	<!-- container container-fluid  -->
+	<div class="container">
+		<div class="row"  id="app">
+			<div class="offset-3 col-6">
+					<h1> Liste de courses</h1>
+						<br>
+						<div class="row">
+							<div class="col-6">
+								<input v-model="nom" class="form-control" >
+							</div>
+							<div class="col-2">
+								<button @click="ajouter()" class="btn btn-success">
+									<i class="fa fa-plus"></i>
+								</button>
+							</div>
+						</div>
+				<br>
+
+				<table class="table table-striped">
+						<thead>
+							<tr><th>Item</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+						<tbody>
+							<tr v-for="(item,index) in tableau"
+							v-bind:class="{'table-danger' : item.status }"
+							>
+								<td v-bind:class="{'barre' : item.status }">
+								{{ item.title }}
+							</td>
+								<td>
+									<button 
+									@click="modifier(index)"
+									class="btn btn-primary">
+										<i class="fa fa-check"></i>
+									</button>
+										&nbsp;
+									<button 
+									@click="enlever(index)"
+									class="btn btn-danger del">
+											<i class="fa fa-trash"></i>
+									</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				
+			</div>
+		
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	<!-- cdn axios -->
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+	const app = new Vue({
+		el:'#app',
+		data:
+		{
+			nom:'',
+			tableau:[]
+		},
+		methods:
+		{
+			ajouter(){
+				let item ={};
+				item.title= this.nom;
+				item.status = false;
+				this.nom = ''; // je vide le champ input
+				this.tableau.push(item);
+				axios.post('../backend/public/items/',item)
+	      		.then(
+			        response => {
+			        let id = response.data.id;
+			        item.id = id;
+			          console.log(this.tableau);
+			        });
+
+			},
+			enlever(i){
+				let id =  this.tableau[i].id;
+				this.tableau.splice(i,1);
+				axios.delete('../backend/public/items/'+id)
+	      		.then(
+			        response => {
+			          console.log(response.data)
+			          
+			        });
+			
+			},
+			modifier(i){
+				if (this.tableau[i].status){
+					this.tableau[i].status= false;
+				}
+				else{
+					this.tableau[i].status= true;
+				}
+				let id =  this.tableau[i].id;
+				
+				axios.put('../backend/public/items/'+id)
+	      		.then(
+			        response => {
+			          console.log(response.data)
+			          
+			        });
+			}
+
+		},
+		mounted()
+			{
+      // backend/public/items/
+	      axios.get('../backend/public/items/')
+	      .then(
+	        response => {
+	          console.log(response.data)
+	          this.tableau = response.data;
+	        });
+			}
+	});
+</script>
+</body>
+</html>
